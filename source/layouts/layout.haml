@@ -3,9 +3,11 @@
   %head
     %meta{ :charset => 'utf-8' }
     %meta{ :content => 'IE=edge,chrome=1', :'http-equiv' => 'X-UA-Compatible' }
-    %meta{ :content => 'width=device-width,initial-scale=1', 'name' => 'viewport' }
+    %meta{ :content => 'width=device-width,initial-scale=1,user-scalable=no', 'name' => 'viewport' }
+    %meta{ :content => 'black-translucent', 'name' => 'apple-mobile-web-app-status-bar-style' }
+    %meta{ :content => 'yes', 'name' => 'apple-mobile-web-app-capable' }
     %title
-      = current_page.data.title || 'Site Title'
+      = current_page.data.title || 'Scrubber'
     %link{ 'href' => 'stylesheets/application.css', 'rel' => 'stylesheet', 'type' => 'text/css' }
   %body
     = yield
