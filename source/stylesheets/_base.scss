@@ -1,4 +1,5 @@
 body {
+  background: #000;
   font: 400 1em/1.4 $primary-font;
   height: 100vh;
   margin: 0;
@@ -9,5 +10,7 @@ body {
 
 video {
   height: 100vh;
-  width: 100%;
+  margin: auto;
+  max-height: 100vh;
+  max-width: 100%;
 }
