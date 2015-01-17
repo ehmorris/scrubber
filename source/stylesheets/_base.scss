@@ -1,5 +1,16 @@
 body {
+  background: #000;
   font: 400 1em/1.4 $primary-font;
+  height: 100vh;
   margin: 0;
+  overflow: hidden;
+  padding: 0;
   text-rendering: optimizeLegibility;
+}
+
+video {
+  height: 100vh;
+  margin: auto;
+  max-height: 100vh;
+  max-width: 100%;
 }
