@@ -3,7 +3,6 @@
 //= require 'underscore.js'
 
 /*
-scroll as seek
 
 drag to right/left is change speed
 as drag is happening, have a circle increasing in size with the number in it. white going forward, red going backward
@@ -28,8 +27,10 @@ function Player(videos) {
   });
   this.playNext();
 
-  _(this).bindAll('onMousewheel', 'playNext');
+  _(this).bindAll('onMousewheel','playNext','keyListener','dragStart','dragMove','dragEnd');
   $(window).on('mousewheel',this.onMousewheel);
+  $(window).on('keypress',this.keyListener);
+  $(window).on('mousedown',this.dragStart);
 
   this.seek_percent = 0;
   this.seekThrottled = _(function() {
@@ -54,6 +55,69 @@ _(Player.prototype).extend({
 
     $('.video-name').text(this.video.name);
     this.videos.shift();
+
+  },
+
+  dragStart: function(e) {
+
+    this.mouse_down = true;
+
+    $(window).on('mousemove',this.dragMove);
+    $(window).on('mouseup',this.dragEnd);
+
+    this.drag = {start: {x: e.pageX, y: e.pageY}};
+  },
+
+
+  dragMove: function (e) {
+    e.preventDefault();
+    
+    var tolerance = 5;
+    if (!this.drag.locked &&
+        Math.abs(e.pageY - this.drag.start.y) > tolerance &&
+        Math.abs(e.pageX - this.drag.start.x) > tolerance) {
+
+      if (Math.abs(e.pageY - this.drag.start.y) >
+          Math.abs(e.pageX - this.drag.start.x))
+        this.drag.locked = 'vertical';
+      else
+        this.drag.locked = 'horizontal';
+
+      console.log(this.drag.locked);
+    }
+
+
+    if (this.drag.locked === 'horizontal') {
+      var max_speed = 4;
+      var speed = 1 + (e.pageY - this.drag.start.y) / $(window).width() * max_speed;
+
+      console.log(speed);
+      this.video.setSpeed(speed);
+    }
+
+  },
+
+  dragEnd: function(e) {
+    console.log('drag end');
+
+    // return to normal speed
+    this.video.setSpeed(1);
+
+    this.drag = false;
+    $(window).off('mousemove',this.dragMove);
+    $(window).off('mouseup',this.dragEnd);
+  },
+
+
+  keyListener: function(e) {
+    console.log('key ' + e.which);
+    // space bar
+    if (e.which === 32) {
+      if (this.video.player.paused)
+        this.video.player.play();
+      else
+        this.video.player.pause();
+    }
   },
 
   favoriteVideo: function(video_url) {
@@ -129,10 +193,11 @@ _(Video.prototype).extend({
   seek: function(seek_percent) {
     console.log('SEEKING ' + Math.round(seek_percent * 100) + '%');
     this.player.currentTime += seek_percent * this.player.duration;
+    this.player.play();
   },
 
-  changeSpeed: function(m) {
-    return console.log('Speed up video');
+  setSpeed: function(speed) {
+    this.player.playbackRate = speed;
   },
 
   destroy: function() {
