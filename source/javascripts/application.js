@@ -207,8 +207,9 @@ _(Video.prototype).extend({
 });
 
 
+
 $(document).ready(function() {
-  $.ajax('http://localhost:3000/metadata/videos',{success:
+  $.ajax('http://localhost:3000/metadata/videos.yaml',{success:
     function(data) {
       var videos = jsyaml.load(data);
       p = new Player(videos);
