@@ -19,13 +19,17 @@ body {
 .video-cont {
   position: relative;
   overflow: hidden;
-  background: #ccc;
   margin: 0 auto;
   width: 720px;  height: 480px;
 }
-.slider-cont {
+
+.video-cont video {
+  visibility: hidden;
   position: absolute;
-  top: 0;  left: 0;  bottom: 0;
-  width: 2160px;
-  background: red;
+  top: 0; bottom: 0; right: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
 }
+
+
