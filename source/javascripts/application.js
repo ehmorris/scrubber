@@ -2,14 +2,6 @@
 //= require 'js-yaml.js'
 //= require 'underscore.js'
 
-/* to do:
-
-have it loop back to the begining when the last one is done
-
-make scroll distance a function of video length
-
-*/
-
 
 function Player(videos) {
   this.videos = videos.map(function(v) {
@@ -30,7 +22,7 @@ function Player(videos) {
   this.seek_percent = 0;
   this.seekThrottled = _(function() {
     this.video.seek(this.seek_percent);
-    this.video.play();
+    this.video.player.play();
     this.seek_percent = 0;
   }.bind(this)).throttle(400,{leading: true})
 
@@ -59,6 +51,8 @@ _(Player.prototype).extend({
 
     this.removeCurrent();
     this.pointer++;
+    if (this.pointer >= this.videos.length)
+      this.pointer = 0;
     this.video = this.videos[this.pointer];
     this.video.$player.on('ended',this.playNext.bind(this));
 
@@ -69,7 +63,7 @@ _(Player.prototype).extend({
 
   removeCurrent: function() {
     if (this.video) {
-      this.video.destroy();
+      this.video.hide();
       $('.indicator .comment-marker').remove();
       $('.comment-container .comment').remove();
     }
@@ -102,7 +96,7 @@ _(Player.prototype).extend({
   commentModalHide: function() {
     $('.comment-modal').removeClass('shown');
     $('textarea').val('');
-    this.video.play();
+    this.video.player.play();
     $('.comment-modal').hide();
   },
 
@@ -218,16 +212,19 @@ _(Player.prototype).extend({
     this.seekThrottled();
 
     var progress = (this.video.player.currentTime + this.video.player.duration * this.seek_percent) / this.video.player.duration;
-    //console.log('progress ' + progress);
+
+    //console.log('here ' + progress);
+    console.log('progress ' + progress);
     if (progress > 1) {
-      this.playNext();
-      this.seek_percent = 0;
-    }
+      //this.playNext();
+      //this.seek_percent = 0;
+      progress = 1;
+    } 
+
     $('.bar').css({width: progress * 100 + '%'});
   }
 
 });
-
 
 function Video(args) {
   _(this).extend(args);
@@ -235,21 +232,15 @@ function Video(args) {
   this.player = this.$player[0];
   $(".video-container").append(this.$player);
 
-  _(this).bindAll('onProgress','onAnyEvent','onPlay','addComment');
+  _(this).bindAll('onProgress','onAnyEvent','addComment');
 
   this.$player.on("loadstart progress suspend abort error emptied stalled loadedmetadata loadeddata canplay canplaythrough playing waiting seeking seeked ended durationchange timeupdate play pause ratechange resize volumechange",this.onAnyEvent);
 
   this.$player.on('timeupdate',this.onProgress);
 
-  // add the comments to the progress bar
-  this.$player.on('playing',_(this.onPlay).once());
 };
 
 _(Video.prototype).extend({
-
-  onPlay: function() {
-    _(this.comments).each(this.addComment)
-  },
 
   addComment: function(c) {
 
@@ -277,14 +268,22 @@ _(Video.prototype).extend({
   },
 
   play: function() {
+    this.$player.show();
+
+    this.$player.on('playing',_(function() {
+      _(this.comments).each(this.addComment)
+    }.bind(this)).once());
+
+    this.player.currentTime = 0;
     this.player.play();
-    this.$player.css({visibility: 'visible'});
   },
 
   onAnyEvent: function(e) {
+    return;
+
     //console.log('VIDEO EVENT: ' + e.type);
-    //if (_('pause seeking waiting seeked playing play ended'.split(' ')).include(e.type))
-    //  $('.message').text(e.type);
+    if (_('pause seeking waiting seeked playing play ended'.split(' ')).include(e.type))
+      $('.message').text(e.type);
   },
 
   onProgress: function(e) {
@@ -298,8 +297,8 @@ _(Video.prototype).extend({
       else
         c.$el.hide();
     }.bind(this));
-
   },
+
 
   seek: function(seek_percent) {
 
@@ -322,8 +321,8 @@ _(Video.prototype).extend({
     this.player.playbackRate = speed;
   },
 
-  destroy: function() {
-    this.$player.remove();
+  hide: function() {
+    this.$player.hide();
   }
 
 });
