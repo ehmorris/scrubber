@@ -8,13 +8,14 @@ class @Video
     @url = url
 
   loadObject: () =>
-    return "<video src='" + @url + "' autoplay='true' id='video' loop='true' webkit-playsinline='true'></video>"
+    return "<video src='" + @url + "' autoplay='false' class='video' loop='true' webkit-playsinline='false'></video>"
 
 class @Player
   constructor: () ->
     video1 = new Video("Boat Video", "videos/boat.mp4")
-    video2 = new Video("Boat Video", "videos/boat.mp4")
-    @loadVideos([video1, video2, "vid3"])
+    video2 = new Video("Je Suis Charlie 1", "videos/Paris-JeSuisCharlie-1.mp4")
+    video3 = new Video("Je Suis Charlie 2", "videos/Paris-JeSuisCharlie-2.mp4")
+    @loadVideos([video1, video2, video3])
 
   loadVideos: (video_array) =>
     console.log "loading many videos"
@@ -22,9 +23,10 @@ class @Player
       @bufferVideo(video)
     @playVideo(video_array[0])
     @playVideo(video_array[1])
+    @playVideo(video_array[2])
 
   playVideo: (video) ->
-    $(".video-cont").append video.loadObject()
+    $(".slider-cont").append video.loadObject()
 
   # Changes speed of player, m = multiplier
   changeSpeed: (m) ->

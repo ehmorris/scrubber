@@ -8,9 +8,24 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-video {
-  height: 100vh;
-  margin: auto;
-  max-height: 100vh;
-  max-width: 100%;
+// video {
+//   height: 100vh;
+//   margin: auto;
+//   max-height: 100vh;
+//   max-width: 100%;
+// }
+
+
+.video-cont {
+  position: relative;
+  overflow: hidden;
+  background: #ccc;
+  margin: 0 auto;
+  width: 720px;  height: 480px;
+}
+.slider-cont {
+  position: absolute;
+  top: 0;  left: 0;  bottom: 0;
+  width: 2160px;
+  background: red;
 }
