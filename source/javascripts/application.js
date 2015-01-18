@@ -6,14 +6,13 @@
 
 have it loop back to the begining when the last one is done
 
-show comments on screen
-
-scroll right/left should also seek
-plus button and title overlap
-make video bigger
-make bubble smaller
 make scroll distance a function of video length
+<<<<<<< HEAD
 when video changes, make the title text start big in the middle and move up and shrink
+=======
+
+when video changes, make the title text start big in the middle and move up and shrink
+>>>>>>> d21c8f10f5c08d0f8d26c62b007405dd27651408
 
 */
 
@@ -44,6 +43,14 @@ function Player(videos) {
     this.video.setSpeed(this.speed);
   }.bind(this)).throttle(300,{leading: false})
 
+  // cancel the comment modal when clicking outside of it
+  $(document).click(function(e) {
+    if ($('.comment-modal').is(':visible') &&
+        !$(e.target).parents().is('.comment-modal') &&
+        !$(e.target).is('.comment-modal')) {
+      this.commentModalHide();
+    }
+  }.bind(this));
 
 
 };
@@ -80,17 +87,23 @@ _(Player.prototype).extend({
     _(function() { $('.comment-modal').addClass('shown'); }).defer();
     this.video.pause();
 
-    // cancel when clicking outside
-    $(document).click(function(e) {
-      if (!$(e.target).parents().is('.comment-modal') &&
-          !$(e.target).is('.comment-modal')) {
-        this.commentSubmit();
-      }
-    }.bind(this));
   },
 
   commentSubmit: function() {
+
+    var new_comment = {
+      time: this.video.player.currentTime,
+      user: 'HackathonMember',
+      comment: $('textarea').val() };
+    this.video.comments.push(new_comment);
+    this.video.addComment(new_comment);
+
+    this.commentModalHide();
+  },
+
+  commentModalHide: function() {
     $('.comment-modal').removeClass('shown');
+    $('textarea').val('');
     this.video.play();
     $('.comment-modal').hide();
   },
@@ -146,10 +159,10 @@ _(Player.prototype).extend({
       var opacity = .3 + (1.5 * drag_width);
       opacity = opacity > 1 ? 1 : opacity;
       opacity = opacity < .3 ? .3 : opacity;
-      console.log('opacity: ' + opacity);
+      //console.log('opacity: ' + opacity);
 
       $('.bubble').css({
-        fontSize: ((this.speed + 1) * 30) + 10,
+        fontSize: ((this.speed + 1) * 10) + 20,
         opacity: opacity});
       $('.bubble-text').text(Math.round(this.speed * 10)/10 + 'x');
       this.setSpeedThrottled();
@@ -194,11 +207,16 @@ _(Player.prototype).extend({
 
     this.video.pause();
 
-    var delta = e.originalEvent.deltaY;
+    var delta;
+    if (Math.abs(e.originalEvent.deltaY) > Math.abs(e.originalEvent.deltaX))
+      delta = e.originalEvent.deltaY;
+    else
+      delta = -1 * e.originalEvent.deltaX;
+
     //console.log('delta ' + delta);
 
     // assume 2000 pixels scrolled to complete video
-    this.seek_percent += delta / 2000;
+    this.seek_percent += delta / (this.video.player.duration * 10);
 
     this.seekThrottled();
 
@@ -220,40 +238,41 @@ function Video(args) {
   this.player = this.$player[0];
   $(".video-container").append(this.$player);
 
-  _(this).bindAll('onProgress','onAnyEvent','addComments');
+  _(this).bindAll('onProgress','onAnyEvent','onPlay','addComment');
 
   this.$player.on("loadstart progress suspend abort error emptied stalled loadedmetadata loadeddata canplay canplaythrough playing waiting seeking seeked ended durationchange timeupdate play pause ratechange resize volumechange",this.onAnyEvent);
 
   this.$player.on('timeupdate',this.onProgress);
 
   // add the comments to the progress bar
-  this.$player.on('playing',_(this.addComments).once());
+  this.$player.on('playing',_(this.onPlay).once());
 };
 
 _(Video.prototype).extend({
 
-  addComments: function() {
-    _(this.comments).each(function(c) {
+  onPlay: function() {
+    _(this.comments).each(this.addComment)
+  },
 
-      var $marker = $('<div class=comment-marker>|</div>');
-      c.position = c.time / this.player.duration;
-      $marker.css({left: c.position * 100 + '%'});
-      $('.indicator').append($marker);
+  addComment: function(c) {
 
-      // add the comments themselves
-      // these are hidden fow now
-      c.$el = $([
-        '<div class=comment>',
-          '<span class=body>',
-            '<strong class=user>',
-              c.user,
-            ': </strong>',
-            c.comment,
-          '</span>',
-        '</div>'].join(''));
-      $('.comment-container').append(c.$el);
+    var $marker = $('<div class=comment-marker>|</div>');
+    c.position = c.time / this.player.duration;
+    $marker.css({left: c.position * 100 + '%'});
+    $('.indicator').append($marker);
 
-    }.bind(this));
+    // add the comments themselves
+    // these are hidden fow now
+    c.$el = $([
+      '<div class=comment>',
+        '<span class=body>',
+          '<strong class=user>',
+            c.user,
+          '</strong>: ',
+          c.comment,
+        '</span>',
+      '</div>'].join(''));
+    $('.comment-container').append(c.$el);
   },
 
   pause: function() {
