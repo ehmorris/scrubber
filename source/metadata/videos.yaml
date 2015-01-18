@@ -7,6 +7,14 @@
       user: smileyKnuckleHead4516
       comment: George Stephanopolus is a tool
     -
+      time: 1:05
+      user: TheRuralJuror 
+      comment: Can't stand the guy
+    -
+      time: 1:20
+      user: smileyKnuckleHead4516
+      comment: Where'd he go?
+    -
       time: 1:30
       user: TheRuralJuror
       comment: He's a hack
@@ -19,9 +27,17 @@
       user: IAmCharlie
       comment: What a show of support
     -
-      time: 3:00
+      time: 1:55
       user: BroadCity420
+      comment: It is amazing
+    -
+      time: 3:00
+      user: IAmCharlie
       comment: Twitter talking heads
+    -
+      time: 3:05
+      user: BroadCity420
+      comment: A fair alternative to live ones
 -
   name: Home Video Hebdo Tribute
   src: videos/Paris-JeSuisCharlie-5.mp4
@@ -34,6 +50,14 @@
       time: 6:10
       user: KeepingUpAppearances
       comment: To BlackBooks--Or is he capitalizing on this?
+    -
+      time: 6:15
+      user: BlackBooks
+      comment: I don't know; his brows are pretty furrowed
+    -
+      time: 6:20
+      user: KeepingUpAppearances
+      comment: I don't buy it
 -
   name: Cartoonists Collaborate -- Je Suis Charlie
   src: videos/Paris-JeSuisCharlie-6.mp4
@@ -43,8 +67,16 @@
       user: ParksAndRec
       comment: Making points
     -
-      time: 10:10
+      time: 9:10
       user: BlackBooks
-      comment: What a collaboration
+      comment: Beautifully so
+    -
+      time: 9:20
+      user: ParksAndRec
+      comment: Agreed
+    -
+      time: 9:30
+      user: BlackBooks
+      comment: The power of the pen
 
 
