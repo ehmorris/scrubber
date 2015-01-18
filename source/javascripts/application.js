@@ -2,22 +2,18 @@
 //= require 'js-yaml.js'
 //= require 'underscore.js'
 
-/*
- * to do:
+/* to do:
 
-add comment button
+have it loop back to the begining when the last one is done
 
 show comments on screen
 
-show comments on scrollbar
-
-drag left to go backward 
-
-transition or something to indicate video has changed
-
-drag to bottom to skip
-
-drag to top to favorite / upvote
+scroll right/left should also seek
+plus button and title overlap
+make video bigger
+make bubble smaller
+make scroll distance a function of video length
+when video changes, make the title text start big in the middle and move up and shrink 
 
 */
 
@@ -28,12 +24,13 @@ function Player(videos) {
   });
   this.playNext();
 
-  _(this).bindAll('onMousewheel','playNext','keyListener','dragStart','dragMove','dragEnd','addComment','commentSubmit');
+  _(this).bindAll('onMousewheel','playNext','keyListener','dragStart','dragMove','dragEnd','commentPrompt','commentSubmit');
   $(window).on('mousewheel',this.onMousewheel);
   $(window).on('keypress',this.keyListener);
   $(window).on('mousedown',this.dragStart);
 
-  $('.add-comment').on('click',this.addComment);
+  $('.add-comment').on('click',this.commentPrompt);
+  $('.comment-modal button.submit').on('click',this.commentSubmit);
 
   this.seek_percent = 0;
   this.seekThrottled = _(function() {
@@ -45,7 +42,7 @@ function Player(videos) {
   this.speed = 1;
   this.setSpeedThrottled = _(function() {
     this.video.setSpeed(this.speed);
-  }.bind(this)).throttle(1000,{leading: false})
+  }.bind(this)).throttle(300,{leading: false})
 
 
 
@@ -57,28 +54,45 @@ _(Player.prototype).extend({
   playNext: function() {
     console.log('PLAY NEXT');
 
-    if (this.video)
-      this.video.destroy();
-
+    this.removeCurrent();
     this.video = this.videos[0];
     this.video.$player.on('ended',this.playNext.bind(this));
-    this.video.play();
 
+    this.video.play();
     $('.video-name').text(this.video.name);
     this.videos.shift();
   },
 
-  addComment: function(e) {
+
+  removeCurrent: function() {
+    if (this.video) {
+      this.video.destroy();
+      $('.indicator .comment-marker').remove();
+      $('.comment-container .comment').remove();
+    }
+  },
+
+  commentPrompt: function(e) {
     e.preventDefault();
     e.stopPropagation();
-    console.log('ADD COMMENT');
-    $('.comment-modal').fadeIn();
+    console.log('COMMENT PROMPT');
+    $('.comment-modal').show();
+    _(function() { $('.comment-modal').addClass('shown'); }).defer();
     this.video.pause();
+
+    // cancel when clicking outside
+    $(document).click(function(e) {
+      if (!$(e.target).parents().is('.comment-modal') &&
+          !$(e.target).is('.comment-modal')) {
+        this.commentSubmit();
+      }
+    }.bind(this));
   },
 
   commentSubmit: function() {
-    $('.comment-modal').fadeOut();
+    $('.comment-modal').removeClass('shown');
     this.video.play();
+    $('.comment-modal').hide();
   },
 
   dragStart: function(e) {
@@ -89,7 +103,6 @@ _(Player.prototype).extend({
     $(window).on('mouseup',this.dragEnd);
 
     this.drag = {start: {x: e.pageX, y: e.pageY}};
-
   },
 
 
@@ -111,35 +124,42 @@ _(Player.prototype).extend({
       $('.bubble-text').text('');
       $('.bubble').css({fontSize: '', opacity: ''});
       $('.bubble').show();
+      $('body').addClass('dragging');
 
       console.log('DRAGGING ' + this.drag.locked);
     }
 
 
     if (this.drag.locked === 'horizontal') {
-      var max_speed = 6;
+      var max_speed = 20;
 
       var drag_width = (e.pageX - this.drag.start.x) / $(window).width();
-      console.log('drag % ' + Math.round(drag_width * 100));
-      this.speed = 1 + drag_width * max_speed;
 
-      console.log({
-        fontSize: (drag_width + 1) * 40,
-        opacity: .4 + (.6 * drag_width)});
+      
+      //console.log('drag % ' + Math.round(drag_width * 100));
+      this.speed = 1 + drag_width * max_speed;
  
+      if (this.speed < 0.2)
+        this.speed = 0.2;
+    
+
+      var opacity = .3 + (1.5 * drag_width);
+      opacity = opacity > 1 ? 1 : opacity;
+      opacity = opacity < .3 ? .3 : opacity;
+      console.log('opacity: ' + opacity);
+
       $('.bubble').css({
-        fontSize: (drag_width + 1) * 20,
-        opacity: .4 + (.6 * drag_width)});
+        fontSize: ((this.speed + 1) * 30) + 10,
+        opacity: opacity});
       $('.bubble-text').text(Math.round(this.speed * 10)/10 + 'x');
       this.setSpeedThrottled();
-
     }
 
   },
 
   dragEnd: function(e) {
     console.log('drag end');
-    //$('.bubble').hide();
+    $('.bubble').hide();
 
     // return to normal speed
     this.speed = 1;
@@ -148,13 +168,19 @@ _(Player.prototype).extend({
     this.drag = false;
     $(window).off('mousemove',this.dragMove);
     $(window).off('mouseup',this.dragEnd);
+    $('body').removeClass('dragging');
   },
 
 
   keyListener: function(e) {
+    // not while in the comment modal please
+    if ($('.comment-modal').hasClass('shown'))
+      return;
+
     console.log('key ' + e.which);
     // space bar
     if (e.which === 32) {
+
       if (this.video.player.paused)
         this.video.player.play();
       else
@@ -162,14 +188,6 @@ _(Player.prototype).extend({
     }
   },
 
-  favoriteVideo: function(video_url) {
-  },
-
-  skipVideo: function() {
-  },
-
-  bufferVideo: function(video) {
-  },
 
   onMousewheel: function(e) {
     e.preventDefault();
@@ -202,15 +220,41 @@ function Video(args) {
   this.player = this.$player[0];
   $(".video-container").append(this.$player);
 
-  _(this).bindAll('updateBar','onAnyEvent');
-
-  this.$player.on('timeupdate',this.updateBar);
+  _(this).bindAll('onProgress','onAnyEvent','addComments');
 
   this.$player.on("loadstart progress suspend abort error emptied stalled loadedmetadata loadeddata canplay canplaythrough playing waiting seeking seeked ended durationchange timeupdate play pause ratechange resize volumechange",this.onAnyEvent);
 
+  this.$player.on('timeupdate',this.onProgress);
+
+  // add the comments to the progress bar
+  this.$player.on('playing',_(this.addComments).once());
 };
 
 _(Video.prototype).extend({
+
+  addComments: function() {
+    _(this.comments).each(function(c) {
+
+      var $marker = $('<div class=comment-marker>*</div>');
+      c.position = c.time / this.player.duration;
+      $marker.css({left: c.position * 100 + '%'});
+      $('.indicator').append($marker);
+
+      // add the comments themselves
+      // these are hidden fow now
+      c.$el = $([
+        '<div class=comment>',
+          '<span class=body>',
+            '<span class=user>',
+              c.user,
+            '</span>',
+            c.comment,
+          '</span>',
+        '</div>'].join(''));
+      $('.comment-container').append(c.$el);
+
+    }.bind(this));
+  },
 
   pause: function() {
     this.player.pause();
@@ -227,9 +271,18 @@ _(Video.prototype).extend({
     //  $('.message').text(e.type);
   },
 
-  updateBar: function(e) {
+  onProgress: function(e) {
     var progress = this.player.currentTime / this.player.duration;
     $('.bar').css({width: progress * 100 + '%'});
+
+    var ten_seconds = 10 / this.player.duration;
+    _(this.comments).each(function(c) {
+      if (progress > c.position && progress < (c.position + ten_seconds)) 
+        c.$el.show();
+      else
+        c.$el.hide();
+    }.bind(this));
+
   },
 
   seek: function(seek_percent) {
