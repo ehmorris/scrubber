@@ -8,8 +8,6 @@ have it loop back to the begining when the last one is done
 
 make scroll distance a function of video length
 
-when video changes, make the title text start big in the middle and move up and shrink 
-
 */
 
 
@@ -148,13 +146,13 @@ _(Player.prototype).extend({
 
       var drag_width = (e.pageX - this.drag.start.x) / $(window).width();
 
-      
+
       //console.log('drag % ' + Math.round(drag_width * 100));
       this.speed = 1 + drag_width * max_speed;
- 
+
       if (this.speed < 0.2)
         this.speed = 0.2;
-    
+
 
       var opacity = .3 + (1.5 * drag_width);
       opacity = opacity > 1 ? 1 : opacity;
@@ -252,10 +250,10 @@ _(Video.prototype).extend({
   onPlay: function() {
     _(this.comments).each(this.addComment)
   },
-      
+
   addComment: function(c) {
 
-    var $marker = $('<div class=comment-marker>*</div>');
+    var $marker = $('<div class=comment-marker>|</div>');
     c.position = c.time / this.player.duration;
     $marker.css({left: c.position * 100 + '%'});
     $('.indicator').append($marker);
@@ -265,9 +263,9 @@ _(Video.prototype).extend({
     c.$el = $([
       '<div class=comment>',
         '<span class=body>',
-          '<span class=user>',
+          '<strong class=user>',
             c.user,
-          '</span>',
+          '</strong>: ',
           c.comment,
         '</span>',
       '</div>'].join(''));
@@ -277,7 +275,7 @@ _(Video.prototype).extend({
   pause: function() {
     this.player.pause();
   },
- 
+
   play: function() {
     this.player.play();
     this.$player.css({visibility: 'visible'});
@@ -295,7 +293,7 @@ _(Video.prototype).extend({
 
     var ten_seconds = 10 / this.player.duration;
     _(this.comments).each(function(c) {
-      if (progress > c.position && progress < (c.position + ten_seconds)) 
+      if (progress > c.position && progress < (c.position + ten_seconds))
         c.$el.show();
       else
         c.$el.hide();

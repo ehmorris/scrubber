@@ -92,7 +92,7 @@ video {
   line-height: 1em;
 
   top: calc(50% - .5em);
- 
+
   text-align: center;
   margin: auto;
 
@@ -140,12 +140,14 @@ video {
 }
 
 .comment-modal button.submit {
-  background: blue;
-  font-size: 30px;
+  font-size: 16px;
   padding: 10px;
   position: absolute;
-  bottom: 10px; right: 10px;
-}
+  color: #444;
+  bottom: 30px;
+  right: 66px;
+  }
+  /*.comment-modal button.submit:hover { }*/
 
 
 .comment-marker {
@@ -157,7 +159,7 @@ video {
 
 .comment-container {
   position: absolute;
-  color: red;
+  color: #eee;
   font-size: 20px;
   bottom: 40px;
   width: 100%;
@@ -168,6 +170,6 @@ video {
   display: none;
 }
 .comment-container .comment .body {
-  background-color: black;
+  background-color: rgba(0,0,0,0.5);
 }
 

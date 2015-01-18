@@ -3,21 +3,21 @@
   src: videos/Paris-JeSuisCharlie-1.mp4
   comments:
     -
-      time: 10
+      time: 62
       user: smileyKnuckleHead4516
       comment: George Stephanopolus is a tool
     -
-      time: 25
-      user: TheRuralJuror 
+      time: 63
+      user: TheRuralJuror
       comment: Can't stand the guy
     -
-      time: 40
+      time: 65
       user: smileyKnuckleHead4516
-      comment: Where'd he go?
-    -
-      time: 50
-      user: TheRuralJuror
       comment: He's a hack
+    -
+      time: 68
+      user: TheRuralJuror
+      comment: Where'd he go?
 -
   name: CNN Charlie Hebdo International Response
   src: videos/Paris-JeSuisCharlie-4.mp4
