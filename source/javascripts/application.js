@@ -236,8 +236,7 @@ function Video(args) {
 
   this.$player.on("loadstart progress suspend abort error emptied stalled loadedmetadata loadeddata canplay canplaythrough playing waiting seeking seeked ended durationchange timeupdate play pause ratechange resize volumechange",this.onAnyEvent);
 
-  this.$player.on('timeupdate',this.onProgress);
-
+  this.$player.on('timeupdate', this.onProgress);
 };
 
 _(Video.prototype).extend({
@@ -322,6 +321,7 @@ _(Video.prototype).extend({
   },
 
   hide: function() {
+    this.player.pause();
     this.$player.hide();
   }
 
