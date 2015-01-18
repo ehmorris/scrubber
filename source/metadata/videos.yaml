@@ -11,18 +11,6 @@
       user: TheRuralJuror
       comment: He's a hack
 -
-  name: Je Suiss Charle2
-  src: videos/Paris-JeSuisCharlie-2.mp4
-  comments:
-    -
-      time: 2:00
-      user: BroadCity420
-      comment: This is terrifying
-    -
-      time: 4:00
-      user: MuffinTop
-      comment: This has really affected the global community
--
   name: Je Suiss Charle4
   src: videos/Paris-JeSuisCharlie-4.mp4
   comments:
