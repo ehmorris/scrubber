@@ -3,27 +3,60 @@
   src: videos/Paris-JeSuisCharlie-1.mp4
   comments:
     -
-      time: 4:12
+      time: 1:01
       user: smileyKnuckleHead4516
       comment: George Stephanopolus is a tool
     -
-      time: 4:30
-      user: smileyKnuckleHead4516
+      time: 1:30
+      user: TheRuralJuror
       comment: He's a hack
 -
   name: Je Suiss Charle2
   src: videos/Paris-JeSuisCharlie-2.mp4
--
-  name: Je Suiss Charle3
-  src: videos/Paris-JeSuisCharlie-3.mp4
+  comments:
+    -
+      time: 2:00
+      user: BroadCity420
+      comment: This is terrifying
+    -
+      time: 4:00
+      user: MuffinTop
+      comment: This has really affected the global community
 -
   name: Je Suiss Charle4
   src: videos/Paris-JeSuisCharlie-4.mp4
+  comments:
+    -
+      time: 4:50
+      user: IAmCharlie
+      comment: What a show of support
+    -
+      time: 6:00
+      user: BroadCity420
+      comment: Twitter talking heads
 -
   name: Je Suiss Charle5
   src: videos/Paris-JeSuisCharlie-5.mp4
+  comments:
+    -
+      time: 8:00
+      user: BlackBooks
+      comment: This guy is really feeling it
+    -
+      time: 9:10
+      user: KeepingUpAppearances
+      comment: To BlackBooks--Or is he capitalizing on this?
 -
   name: Je Suiss Charle6
   src: videos/Paris-JeSuisCharlie-6.mp4
+  comments:
+    -
+      time: 11:10
+      user: ParksAndRec
+      comment: Making points
+    -
+      time: 13:10
+      user: BlackBooks
+      comment: What a collaboration
 
 
