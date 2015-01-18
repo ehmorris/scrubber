@@ -7,7 +7,9 @@ $ ->
     percent_right = Math.floor((e.clientX / screenwidth) * 100)
     playback_rate = max_volume * (percent_right / 100)
 
+    video.pause()
     video.playbackRate = playback_rate
+    video.play()
 
     console.log(playback_rate)
     
