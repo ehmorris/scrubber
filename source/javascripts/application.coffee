@@ -11,11 +11,10 @@ class @Video
     $(".video-cont").append @$player
 
   play: () =>
-    console.log('here');
-    console.log(@player);
-    @$player.css({visibility: ''});
-    @player.play();
-
+    console.log('here')
+    console.log(@$player);
+    @player.play()
+    $(@player).css({visibility: ''})
 
 class @Player
   constructor: () ->
@@ -59,5 +58,6 @@ class @Player
     console.log "buffer video"
 
 
-@p = new Player();
+$(document).ready ->
+  window.p = new Player();
 
