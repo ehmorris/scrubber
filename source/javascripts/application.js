@@ -17,6 +17,8 @@ function Player(videos) {
   this.videos = videos.map(function(v) {
     return new Video(v);
   });
+
+  this.pointer = -1;
   this.playNext();
 
   _(this).bindAll('onMousewheel','playNext','keyListener','dragStart','dragMove','dragEnd','commentPrompt','commentSubmit');
@@ -32,7 +34,7 @@ function Player(videos) {
     this.video.seek(this.seek_percent);
     this.video.play();
     this.seek_percent = 0;
-  }.bind(this)).throttle(400,{leading: false})
+  }.bind(this)).throttle(400,{leading: true})
 
   this.speed = 1;
   this.setSpeedThrottled = _(function() {
@@ -58,12 +60,12 @@ _(Player.prototype).extend({
     console.log('PLAY NEXT');
 
     this.removeCurrent();
-    this.video = this.videos[0];
+    this.pointer++;
+    this.video = this.videos[this.pointer];
     this.video.$player.on('ended',this.playNext.bind(this));
 
     this.video.play();
     $('.video-name').text(this.video.name);
-    this.videos.shift();
   },
 
 
@@ -87,12 +89,14 @@ _(Player.prototype).extend({
 
   commentSubmit: function() {
 
-    var new_comment = {
-      time: this.video.player.currentTime,
-      user: 'HackathonMember', 
-      comment: $('textarea').val() };
-    this.video.comments.push(new_comment);
-    this.video.addComment(new_comment);
+    if ($('textarea').val()) {
+      var new_comment = {
+        time: this.video.player.currentTime,
+        user: 'HackathonMember', 
+        comment: $('textarea').val() };
+      this.video.comments.push(new_comment);
+      this.video.addComment(new_comment);
+    }
 
     this.commentModalHide();
   },
@@ -118,11 +122,11 @@ _(Player.prototype).extend({
   dragMove: function (e) {
     e.preventDefault();
     $('.bubble').css({transform: 'translate(' + e.pageX + 'px,' + e.pageY + 'px)'});
-    
+
     var lock_tolerance = 5;
     if (!this.drag.locked &&
-        Math.abs(e.pageY - this.drag.start.y) > lock_tolerance &&
-        Math.abs(e.pageX - this.drag.start.x) > lock_tolerance) {
+        (Math.abs(e.pageY - this.drag.start.y) > lock_tolerance ||
+         Math.abs(e.pageX - this.drag.start.x) > lock_tolerance)) {
 
       if (Math.abs(e.pageY - this.drag.start.y) >
           Math.abs(e.pageX - this.drag.start.x))
@@ -167,7 +171,6 @@ _(Player.prototype).extend({
   },
 
   dragEnd: function(e) {
-    console.log('drag end');
     $('.bubble').hide();
 
     // return to normal speed
