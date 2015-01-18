@@ -3,20 +3,21 @@
 //= require 'underscore.js'
 
 /*
+ * to do:
 
-drag to right/left is change speed
-as drag is happening, have a circle increasing in size with the number in it. white going forward, red going backward
-
-drag top/bottom is up vote / down vote
-use 3d transform. new one fades in from behind
-
-when we scroll through to the end, have it sink to the bottom
-
-we can have a big plus button that pauses the video and opens a modal to add a comment
+add comment button
 
 show comments on screen
 
 show comments on scrollbar
+
+drag left to go backward 
+
+transition or something to indicate video has changed
+
+drag to bottom to skip
+
+drag to top to favorite / upvote
 
 */
 
@@ -27,10 +28,12 @@ function Player(videos) {
   });
   this.playNext();
 
-  _(this).bindAll('onMousewheel','playNext','keyListener','dragStart','dragMove','dragEnd');
+  _(this).bindAll('onMousewheel','playNext','keyListener','dragStart','dragMove','dragEnd','addComment','commentSubmit');
   $(window).on('mousewheel',this.onMousewheel);
   $(window).on('keypress',this.keyListener);
   $(window).on('mousedown',this.dragStart);
+
+  $('.add-comment').on('click',this.addComment);
 
   this.seek_percent = 0;
   this.seekThrottled = _(function() {
@@ -39,23 +42,43 @@ function Player(videos) {
     this.seek_percent = 0;
   }.bind(this)).throttle(400,{leading: false})
 
+  this.speed = 1;
+  this.setSpeedThrottled = _(function() {
+    this.video.setSpeed(this.speed);
+  }.bind(this)).throttle(1000,{leading: false})
+
+
+
 };
 
 
 _(Player.prototype).extend({
 
   playNext: function() {
+    console.log('PLAY NEXT');
+
     if (this.video)
       this.video.destroy();
 
-    console.log('PLAY NEXT');
-    this.video = this.videos[0]
-    this.video.$player.on('ended',this.playNext);
+    this.video = this.videos[0];
+    this.video.$player.on('ended',this.playNext.bind(this));
     this.video.play();
 
     $('.video-name').text(this.video.name);
     this.videos.shift();
+  },
 
+  addComment: function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('ADD COMMENT');
+    $('.comment-modal').fadeIn();
+    this.video.pause();
+  },
+
+  commentSubmit: function() {
+    $('.comment-modal').fadeOut();
+    this.video.play();
   },
 
   dragStart: function(e) {
@@ -66,16 +89,18 @@ _(Player.prototype).extend({
     $(window).on('mouseup',this.dragEnd);
 
     this.drag = {start: {x: e.pageX, y: e.pageY}};
+
   },
 
 
   dragMove: function (e) {
     e.preventDefault();
+    $('.bubble').css({transform: 'translate(' + e.pageX + 'px,' + e.pageY + 'px)'});
     
-    var tolerance = 5;
+    var lock_tolerance = 5;
     if (!this.drag.locked &&
-        Math.abs(e.pageY - this.drag.start.y) > tolerance &&
-        Math.abs(e.pageX - this.drag.start.x) > tolerance) {
+        Math.abs(e.pageY - this.drag.start.y) > lock_tolerance &&
+        Math.abs(e.pageX - this.drag.start.x) > lock_tolerance) {
 
       if (Math.abs(e.pageY - this.drag.start.y) >
           Math.abs(e.pageX - this.drag.start.x))
@@ -83,24 +108,41 @@ _(Player.prototype).extend({
       else
         this.drag.locked = 'horizontal';
 
-      console.log(this.drag.locked);
+      $('.bubble-text').text('');
+      $('.bubble').css({fontSize: '', opacity: ''});
+      $('.bubble').show();
+
+      console.log('DRAGGING ' + this.drag.locked);
     }
 
 
     if (this.drag.locked === 'horizontal') {
-      var max_speed = 4;
-      var speed = 1 + (e.pageY - this.drag.start.y) / $(window).width() * max_speed;
+      var max_speed = 6;
 
-      console.log(speed);
-      this.video.setSpeed(speed);
+      var drag_width = (e.pageX - this.drag.start.x) / $(window).width();
+      console.log('drag % ' + Math.round(drag_width * 100));
+      this.speed = 1 + drag_width * max_speed;
+
+      console.log({
+        fontSize: (drag_width + 1) * 40,
+        opacity: .4 + (.6 * drag_width)});
+ 
+      $('.bubble').css({
+        fontSize: (drag_width + 1) * 20,
+        opacity: .4 + (.6 * drag_width)});
+      $('.bubble-text').text(Math.round(this.speed * 10)/10 + 'x');
+      this.setSpeedThrottled();
+
     }
 
   },
 
   dragEnd: function(e) {
     console.log('drag end');
+    //$('.bubble').hide();
 
     // return to normal speed
+    this.speed = 1;
     this.video.setSpeed(1);
 
     this.drag = false;
@@ -181,8 +223,8 @@ _(Video.prototype).extend({
 
   onAnyEvent: function(e) {
     //console.log('VIDEO EVENT: ' + e.type);
-    if (_('pause seeking waiting seeked playing play ended'.split(' ')).include(e.type))
-      $('.message').text(e.type);
+    //if (_('pause seeking waiting seeked playing play ended'.split(' ')).include(e.type))
+    //  $('.message').text(e.type);
   },
 
   updateBar: function(e) {
@@ -191,12 +233,23 @@ _(Video.prototype).extend({
   },
 
   seek: function(seek_percent) {
-    console.log('SEEKING ' + Math.round(seek_percent * 100) + '%');
-    this.player.currentTime += seek_percent * this.player.duration;
-    this.player.play();
+
+    var time_addition = seek_percent * this.player.duration;
+
+    if (this.player.currentTime + time_addition > this.player.duration) {
+      console.log('SEEKING past the end');
+      this.$player.trigger('ended');
+      return;
+    }
+    else {
+      console.log('SEEKING ' + Math.round(seek_percent * 100) + '%');
+      this.player.currentTime += time_addition;
+      this.player.play();
+    }
   },
 
   setSpeed: function(speed) {
+    console.log('SPEED ' + speed);
     this.player.playbackRate = speed;
   },
 
